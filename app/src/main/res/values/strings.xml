@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Senior Design App</string>
+    <string name="CadenceValue">0.0</string>
 </resources>
