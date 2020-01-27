@@ -34,6 +34,10 @@ public class CadenceService extends IntentService {
 
             testFFT.shiftAndCycleNext();
 
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {}
+
             double testFreq = testFFT.getFrequency();
 
             sendIntent.putExtra(VALUE_ID, testFreq);

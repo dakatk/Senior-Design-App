@@ -4,7 +4,11 @@ import java.util.ArrayList;
 
 public class TestFFT {
 
-    private Double[] rawValues = {2.69,16.11,21.00,70.80,105.16,105.22,99.85,91.80,68.05,57.86,47.97,38.33,21.61,13.67,4.70,-4.64,-24.72,
+    private static final int SAMPLE_SIZE = 256;
+
+    private Double[] rawValues = {
+
+            2.69,16.11,21.00,70.80,105.16,105.22,99.85,91.80,68.05,57.86,47.97,38.33,21.61,13.67,4.70,-4.64,-24.72,
             -34.97,-44.80,-53.89,-70.56,-77.58,-84.23,-90.33,-101.68,-107.12,-111.88,-117.86,-132.39,-142.15,-150.21,-155.15,
             -167.48,-172.49,-172.55,-166.69,-148.32,-139.47,-140.38,-140.99,-150.21,-152.77,-148.07,-127.93,-62.50,-34.48,-6.10,
             16.05,50.23,62.44,67.38,71.17,72.69,78.67,81.18,71.17,7.93,-10.74,-20.26,-30.27,-67.81,-78.80,-82.28,-81.30,-57.43,-34.61,
@@ -31,37 +35,41 @@ public class TestFFT {
             -73.36,-81.60,-86.06,-90.21,-93.20,-94.91,-94.60,-94.48,-95.28,-98.33,-102.11,-105.29,-106.14,-104.74,-104.31,-103.21,-102.29,
             -105.35,-106.26,-105.22,-104.92,-102.23,-103.09,-104.98,-104.68,-102.11,-104.55,-104.86,-104.80,-94.12,-83.50,-72.39,-64.45,
             -61.34,-58.29,-56.52,-56.70,-37.78,-28.26,-22.83,-19.90,-16.11,-13.73,-12.02,-11.11,-11.60,-13.37,-15.87,-19.35,-28.26,-30.88,
-            -31.74,-30.94,-24.54,-19.96,-15.44,-11.23,-2.87,1.22,5.31,8.79,13.00,13.24,13.12,13.06};
+            -31.74,-30.94,-24.54,-19.96,-15.44,-11.23,-2.87,1.22,5.31,8.79,13.00,13.24,13.12,13.06,
+
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+    };
 
     private ArrayList<Double> dataSample;
     private FFT fft;
 
-    private int index = 0;
+    private int index;
 
     public TestFFT() {
 
-        dataSample = new ArrayList<>();
-        fft = new FFT();
+        this.dataSample = new ArrayList<>();
+        this.fft = new FFT();
+
+        this.index = 0;
     }
 
     public void shiftAndCycleNext() {
 
-        double nextValue = rawValues[index];
+        this.dataSample.clear();
 
-        dataSample.add(dataSample.size(), nextValue);
+        for (int i = 0; i < SAMPLE_SIZE; i ++) {
 
-        if (dataSample.size() > 256)
-            dataSample.remove(0);
+            this.dataSample.add(rawValues[index]);
 
-        if (++index >= rawValues.length)
-            index = 0;
+            this.index ++;
+
+            if (this.index >= this.rawValues.length)
+                this.index = 0;
+        }
     }
 
     public double getFrequency() {
 
-        if (dataSample.size() < 256)
-            return 0.0;
-
-        return fft.centerFrequency(dataSample, 250);
+        return this.fft.centerFrequency(this.dataSample, 250);
     }
 }

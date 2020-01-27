@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 import semicolon.com.seniordesignapp.fft.maths.Complex;
 
-public class FFT {
+class FFT {
 
     // Bit reversal algorithm, altered for use with FFT
     @Contract(pure = true)
@@ -78,26 +78,8 @@ public class FFT {
         return buffer;
     }
 
-    public List<Double> computeMagnitudes(@NotNull List<Double> values) {
-
-        final int n = values.size();
-
-        List<Complex> fft = this.compute(values);
-        final List<Double> magnitudes = new ArrayList<>();
-
-        fft.forEach(new Consumer<Complex>() {
-
-            @Override
-            public void accept(Complex value) {
-                magnitudes.add(value.magnitude() / n);
-            }
-        });
-
-        return magnitudes;
-    }
-
     // Formula: for max magnitude at indices n0 and N - n0, Fsin = (Fs * n0) / N
-    public double centerFrequency(@NotNull List<Double> values, double samplingFreq) {
+    double centerFrequency(@NotNull List<Double> values, double samplingFreq) {
 
         final int n = values.size();
 
