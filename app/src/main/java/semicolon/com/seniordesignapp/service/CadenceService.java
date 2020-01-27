@@ -4,29 +4,39 @@ import android.app.IntentService;
 import android.content.Intent;
 
 import androidx.annotation.Nullable;
+import semicolon.com.seniordesignapp.fft.TestFFT;
 
 public class CadenceService extends IntentService {
 
     public static final String BROADCAST_ID = "cadence_send";
     public static final String VALUE_ID = "cadence_value";
 
+    private TestFFT testFFT;
+
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
      */
     public CadenceService() {
+
         super("Cadence Service");
+
+        testFFT = new TestFFT();
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        for (int i = 0; i < 256; i ++) {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(BROADCAST_ID);
 
-            Intent sendIntent = new Intent();
+        while (true) {
 
-            sendIntent.setAction(BROADCAST_ID);
-            sendIntent.putExtra(VALUE_ID, (float)i);
+            testFFT.shiftAndCycleNext();
 
+            double testFreq = testFFT.getFrequency();
+
+            sendIntent.putExtra(VALUE_ID, testFreq);
             sendBroadcast(sendIntent);
         }
     }

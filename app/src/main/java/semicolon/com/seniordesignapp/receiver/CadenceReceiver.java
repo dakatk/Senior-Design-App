@@ -20,7 +20,7 @@ public class CadenceReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, @NotNull Intent intent) {
 
-        float cadence = intent.getFloatExtra(CadenceService.VALUE_ID, 0.0f);
+        double cadence = intent.getDoubleExtra(CadenceService.VALUE_ID, 0.0);
 
         this.view.setText(String.valueOf(cadence));
     }
