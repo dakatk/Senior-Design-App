@@ -43,33 +43,39 @@ public class TestFFT {
     private ArrayList<Double> dataSample;
     private FFT fft;
 
-    private int index;
+    private static int index = 0;
 
     public TestFFT() {
 
-        this.dataSample = new ArrayList<>();
-        this.fft = new FFT();
-
-        this.index = 0;
+        dataSample = new ArrayList<>();
+        fft = new FFT();
     }
 
+    /*
+    Shift in SAMPLE_SIZE values
+    Take the FFT of that set of values
+    Shift in the next 256 values
+    Take the FFT of the next set
+    Average the FFT results of first and next sets, report
+    Next becomes prev, repeat
+     */
     public void shiftAndCycleNext() {
 
-        this.dataSample.clear();
+        dataSample.clear();
 
         for (int i = 0; i < SAMPLE_SIZE; i ++) {
 
-            this.dataSample.add(rawValues[index]);
+            dataSample.add(rawValues[index]);
 
-            this.index ++;
+            index ++;
 
-            if (this.index >= this.rawValues.length)
-                this.index = 0;
+            if (index >= rawValues.length)
+                index = 0;
         }
     }
 
     public double getFrequency() {
 
-        return this.fft.centerFrequency(this.dataSample, 250);
+        return fft.centerFrequency(dataSample, 250);
     }
 }

@@ -8,10 +8,12 @@ import semicolon.com.seniordesignapp.fft.TestFFT;
 
 public class CadenceService extends IntentService {
 
+    // public static boolean running = false;
+
     public static final String BROADCAST_ID = "cadence_send";
     public static final String VALUE_ID = "cadence_value";
 
-    private TestFFT testFFT;
+    private TestFFT testFFT = new TestFFT();
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
@@ -19,29 +21,17 @@ public class CadenceService extends IntentService {
     public CadenceService() {
 
         super("Cadence Service");
-
-        testFFT = new TestFFT();
     }
 
-    @SuppressWarnings("InfiniteLoopStatement")
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
         Intent sendIntent = new Intent();
         sendIntent.setAction(BROADCAST_ID);
 
-        while (true) {
+        testFFT.shiftAndCycleNext();
+        sendIntent.putExtra(VALUE_ID, testFFT.getFrequency());
 
-            testFFT.shiftAndCycleNext();
-
-            try {
-                Thread.sleep(100);
-            } catch (Exception e) {}
-
-            double testFreq = testFFT.getFrequency();
-
-            sendIntent.putExtra(VALUE_ID, testFreq);
-            sendBroadcast(sendIntent);
-        }
+        sendBroadcast(sendIntent);
     }
 }
