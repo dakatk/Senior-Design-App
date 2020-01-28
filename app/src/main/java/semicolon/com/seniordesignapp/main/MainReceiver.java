@@ -31,7 +31,7 @@ public class MainReceiver extends BroadcastReceiver {
         if (action.equals(CadenceService.BROADCAST_ID)) {
 
             double cadenceValue = intent.getDoubleExtra(CadenceService.VALUE_ID, 0.0) * 60.0;
-            String cadenceString = String.format("%.2f", cadenceValue);
+            String cadenceString = String.format("%.2f SPM/F", cadenceValue / 2.0);
 
             view.setText(cadenceString);
         }
