@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
@@ -14,10 +15,12 @@ import semicolon.com.seniordesignapp.service.CadenceService;
 public class MainReceiver extends BroadcastReceiver {
 
     private TextView view;
+    private SeekBar seekBar;
 
-    public MainReceiver(TextView view) {
+    public MainReceiver(TextView view, SeekBar seekBar) {
 
         this.view = view;
+        this.seekBar = seekBar;
     }
 
     @SuppressLint("DefaultLocale")
@@ -30,10 +33,11 @@ public class MainReceiver extends BroadcastReceiver {
 
         if (action.equals(CadenceService.BROADCAST_ID)) {
 
-            double cadenceValue = intent.getDoubleExtra(CadenceService.VALUE_ID, 0.0) * 60.0;
-            String cadenceString = String.format("%.2f SPM/F", cadenceValue / 2.0);
+            double cadenceValue = intent.getDoubleExtra(CadenceService.VALUE_ID, 0.0) * 30.0;
+            String cadenceString = String.format("%.2f", cadenceValue);
 
             view.setText(cadenceString);
+            seekBar.setProgress((int)cadenceValue - 40, true);
         }
 
         else if (action.equals(BluetoothService.BROADCAST_ID)) {

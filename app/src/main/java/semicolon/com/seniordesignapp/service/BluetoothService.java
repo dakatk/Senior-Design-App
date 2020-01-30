@@ -16,8 +16,6 @@ public class BluetoothService extends IntentService {
     public BluetoothService() {
 
         super("Bluetooth Service");
-
-
     }
 
     @Override

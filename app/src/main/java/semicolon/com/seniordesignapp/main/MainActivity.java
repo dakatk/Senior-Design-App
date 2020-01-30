@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -31,7 +32,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playbackButton.setOnClickListener(this);
 
         TextView cadenceView = findViewById(R.id.show_cadence);
-        mainReceiver = new MainReceiver(cadenceView);
+        SeekBar cadenceDiff = findViewById(R.id.difference_seekbar);
+
+        mainReceiver = new MainReceiver(cadenceView, cadenceDiff);
 
         IntentFilter intentFilter = new IntentFilter();
 
@@ -60,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     startService(cadenceService);
 
                     try {
-                        Thread.sleep(200);
+                        Thread.sleep(500);
                     } catch (Exception ignored) {}
                 }
             }

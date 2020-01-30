@@ -3,4 +3,5 @@
     <string name="cadence_value">0.0</string>
     <string name="button_run">Run</string>
     <string name="button_stop">Stop</string>
+    <string name="cadence_units">SPM/F</string>
 </resources>
