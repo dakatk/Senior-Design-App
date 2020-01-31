@@ -1,12 +1,11 @@
 package semicolon.com.seniordesignapp.service;
 
-import android.app.IntentService;
 import android.content.Intent;
 
 import androidx.annotation.Nullable;
 import semicolon.com.seniordesignapp.fft.TestFFT;
 
-public class CadenceService extends IntentService {
+public class CadenceService extends SendIntentService {
 
     // public static boolean running = false;
 
@@ -20,18 +19,15 @@ public class CadenceService extends IntentService {
      */
     public CadenceService() {
 
-        super("Cadence Service");
+        super("Cadence Service", BROADCAST_ID);
     }
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(BROADCAST_ID);
-
         testFFT.shiftAndCycleNext();
-        sendIntent.putExtra(VALUE_ID, testFFT.getFrequency());
+        getSendIntent().putExtra(VALUE_ID, testFFT.getFrequency());
 
-        sendBroadcast(sendIntent);
+        super.onHandleIntent(intent);
     }
 }
