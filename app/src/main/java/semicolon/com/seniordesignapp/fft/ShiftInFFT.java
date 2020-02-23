@@ -2,11 +2,11 @@ package semicolon.com.seniordesignapp.fft;
 
 import java.util.ArrayList;
 
-public class TestFFT {
+public class ShiftInFFT {
 
     private static final int SAMPLE_SIZE = 256;
 
-    private Double[] rawValues = {
+    /*private Double[] rawValues = {
 
             2.69,16.11,21.00,70.80,105.16,105.22,99.85,91.80,68.05,57.86,47.97,38.33,21.61,13.67,4.70,-4.64,-24.72,
             -34.97,-44.80,-53.89,-70.56,-77.58,-84.23,-90.33,-101.68,-107.12,-111.88,-117.86,-132.39,-142.15,-150.21,-155.15,
@@ -38,40 +38,30 @@ public class TestFFT {
             -31.74,-30.94,-24.54,-19.96,-15.44,-11.23,-2.87,1.22,5.31,8.79,13.00,13.24,13.12,13.06,
 
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-    };
+    };*/
 
     private ArrayList<Double> dataSample;
     private FFT fft;
 
-    private static int index = 0;
-
-    public TestFFT() {
+    public ShiftInFFT() {
 
         dataSample = new ArrayList<>();
         fft = new FFT();
     }
 
-    /*
-    Shift in SAMPLE_SIZE values
-    Take the FFT of that set of values
-    Shift in the next 256 values
-    Take the FFT of the next set
-    Average the FFT results of first and next sets, report
-    Next becomes prev, repeat
-     */
-    public void shiftAndCycleNext() {
+    public boolean shiftInAndUpdate(double value) {
 
-        dataSample.clear();
+        System.out.println(dataSample.size());
 
-        for (int i = 0; i < SAMPLE_SIZE; i ++) {
+        dataSample.add(value);
 
-            dataSample.add(rawValues[index]);
+        if (dataSample.size() == SAMPLE_SIZE - 1)
+            return true;
 
-            index ++;
+        if (dataSample.size() >= SAMPLE_SIZE)
+            dataSample.clear();
 
-            if (index >= rawValues.length)
-                index = 0;
-        }
+        return false;
     }
 
     public double getFrequency() {

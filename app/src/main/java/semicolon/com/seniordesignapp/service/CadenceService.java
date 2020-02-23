@@ -3,7 +3,7 @@ package semicolon.com.seniordesignapp.service;
 import android.content.Intent;
 
 import androidx.annotation.Nullable;
-import semicolon.com.seniordesignapp.fft.TestFFT;
+import semicolon.com.seniordesignapp.fft.ShiftInFFT;
 
 public class CadenceService extends SendIntentService {
 
@@ -11,8 +11,11 @@ public class CadenceService extends SendIntentService {
 
     public static final String BROADCAST_ID = "cadence_send";
     public static final String VALUE_ID = "cadence_value";
+    public static final String BLE_VALUE_ID = "ble_value";
 
-    private TestFFT testFFT = new TestFFT();
+    private ShiftInFFT shiftInFFT = new ShiftInFFT();
+
+    private double prevFFTValue;
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
@@ -20,14 +23,30 @@ public class CadenceService extends SendIntentService {
     public CadenceService() {
 
         super("Cadence Service", BROADCAST_ID);
+
+        prevFFTValue = -1.0;
     }
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
 
-        testFFT.shiftAndCycleNext();
-        getSendIntent().putExtra(VALUE_ID, testFFT.getFrequency());
+        if (intent == null)
+            return;
 
-        super.onHandleIntent(intent);
+        float bleValue = intent.getFloatExtra(BLE_VALUE_ID, 0.0f);
+
+        if (shiftInFFT.shiftInAndUpdate((double)bleValue)) {
+
+            System.out.println("UPDATE");
+
+            if (prevFFTValue == -1.0)
+                prevFFTValue = shiftInFFT.getFrequency();
+
+            else
+                prevFFTValue = (prevFFTValue + shiftInFFT.getFrequency()) / 2.0;
+
+            getSendIntent().putExtra(VALUE_ID, prevFFTValue);
+            super.onHandleIntent(intent);
+        }
     }
 }

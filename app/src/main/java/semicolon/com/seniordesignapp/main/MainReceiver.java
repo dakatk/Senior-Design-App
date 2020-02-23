@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
 
-import semicolon.com.seniordesignapp.service.BluetoothService;
 import semicolon.com.seniordesignapp.service.CadenceService;
 
 public class MainReceiver extends BroadcastReceiver {
@@ -38,11 +37,6 @@ public class MainReceiver extends BroadcastReceiver {
 
             view.setText(cadenceString);
             seekBar.setProgress((int)cadenceValue - 40, true);
-        }
-
-        else if (action.equals(BluetoothService.BROADCAST_ID)) {
-
-            // TODO
         }
     }
 }
