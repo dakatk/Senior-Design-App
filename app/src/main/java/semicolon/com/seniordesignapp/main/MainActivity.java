@@ -3,6 +3,7 @@ package semicolon.com.seniordesignapp.main;
 import androidx.appcompat.app.AppCompatActivity;
 import semicolon.com.seniordesignapp.R;
 import semicolon.com.seniordesignapp.bluetooth.BleAdapter;
+import semicolon.com.seniordesignapp.receiver.CadenceReceiver;
 import semicolon.com.seniordesignapp.service.CadenceService;
 
 import android.Manifest;
@@ -27,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final static int REQUEST_ENABLE_BT = 1;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
-    private MainReceiver mainReceiver;
+    private CadenceReceiver cadenceReceiver;
     private Thread serviceThread;
 
     private BluetoothAdapter bluetoothAdapter;
@@ -47,12 +48,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TextView cadenceView = findViewById(R.id.show_cadence);
         SeekBar cadenceDiff = findViewById(R.id.difference_seekbar);
 
-        mainReceiver = new MainReceiver(cadenceView, cadenceDiff);
+        cadenceReceiver = new CadenceReceiver(cadenceView, cadenceDiff);
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(CadenceService.BROADCAST_ID);
 
-        registerReceiver(mainReceiver, intentFilter);
+        registerReceiver(cadenceReceiver, intentFilter);
 
         enableLocationServices();
         enableBluetoothServices();
@@ -192,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             serviceThread.join();
         } catch (Exception ignored) {}
 
-        unregisterReceiver(mainReceiver);
+        unregisterReceiver(cadenceReceiver);
     }
 
     @Override

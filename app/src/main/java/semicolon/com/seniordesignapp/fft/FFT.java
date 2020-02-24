@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 import semicolon.com.seniordesignapp.fft.maths.Complex;
 
-class FFT {
+public class FFT {
 
     // Bit reversal algorithm, altered for use with FFT
     @Contract(pure = true)
@@ -79,7 +79,7 @@ class FFT {
     }
 
     // Formula: for max magnitude at indices n0 and N - n0, Fsin = (Fs * n0) / N
-    double centerFrequency(@NotNull List<Double> values, double samplingFreq) {
+    public double centerFrequency(@NotNull List<Double> values, double samplingFreq) {
 
         final int n = values.size();
 

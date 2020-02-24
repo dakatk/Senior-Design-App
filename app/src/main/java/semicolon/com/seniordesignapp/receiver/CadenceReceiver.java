@@ -1,4 +1,4 @@
-package semicolon.com.seniordesignapp.main;
+package semicolon.com.seniordesignapp.receiver;
 
 import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
@@ -11,12 +11,12 @@ import org.jetbrains.annotations.NotNull;
 
 import semicolon.com.seniordesignapp.service.CadenceService;
 
-public class MainReceiver extends BroadcastReceiver {
+public class CadenceReceiver extends BroadcastReceiver {
 
     private TextView view;
     private SeekBar seekBar;
 
-    public MainReceiver(TextView view, SeekBar seekBar) {
+    public CadenceReceiver(TextView view, SeekBar seekBar) {
 
         this.view = view;
         this.seekBar = seekBar;
@@ -28,7 +28,8 @@ public class MainReceiver extends BroadcastReceiver {
 
         String action = intent.getAction();
 
-        if (action == null) return;
+        if (action == null)
+            return;
 
         if (action.equals(CadenceService.BROADCAST_ID)) {
 
