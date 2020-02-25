@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.UUID;
 
 import semicolon.com.seniordesignapp.R;
@@ -52,10 +51,7 @@ public class BleAdapter {
 
             @Override
             public void run() {
-
                 bluetoothLeScanner.startScan(leScanCallback);
-                //while (pairedDevice == null) ;
-                //bluetoothLeScanner.stopScan(leScanCallback);
             }
         });
     }
@@ -132,36 +128,24 @@ public class BleAdapter {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, @NotNull BluetoothGattCharacteristic characteristic) {
 
-            System.out.println("CHAR CHANGED");
-
             if (!gattChanged) {
 
                 gattValue = characteristic.getValue();
                 gattChanged = true;
             }
-
-            /*valuesBuffer.add(characteristic.getValue());
-
-            if (valuesBuffer.size() >= 2000)
-                valuesBuffer.remove(0);*/
         }
     };
 
     public Float getNextGattValue() {
+
+        if (gattValue == null)
+            return null;
 
         float value = ByteBuffer.wrap(gattValue).order(ByteOrder.LITTLE_ENDIAN).getFloat();
 
         gattChanged = false;
 
         return value;
-
-        /*
-        if (valuesBuffer.size() == 0)
-            return null;
-
-        byte[] value = valuesBuffer.remove(valuesBuffer.size() - 1);
-
-        return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getFloat();*/
     }
 
     @NotNull

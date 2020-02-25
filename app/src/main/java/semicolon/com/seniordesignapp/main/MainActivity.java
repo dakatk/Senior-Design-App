@@ -15,7 +15,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -29,16 +28,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final static int REQUEST_ENABLE_BT = 1;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
-    private TextView cadenceView;
-    private SeekBar cadenceDiff;
-
     private CadenceReceiver cadenceReceiver;
-    private Thread serviceThread;
 
     private BluetoothAdapter bluetoothAdapter;
     private Button playbackButton;
 
     private BleAdapter bleAdapter;
+    private MainTask mainTask;
 
     private boolean running = false;
 
@@ -51,8 +47,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playbackButton = findViewById(R.id.playback_button);
         playbackButton.setOnClickListener(this);
 
-        cadenceView = findViewById(R.id.show_cadence);
-        cadenceDiff = findViewById(R.id.difference_seekbar);
+        TextView cadenceView = findViewById(R.id.show_cadence);
+        SeekBar cadenceDiff = findViewById(R.id.difference_seekbar);
 
         cadenceReceiver = new CadenceReceiver(cadenceView, cadenceDiff);
 
@@ -65,38 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         enableBluetoothServices();
 
         bleAdapter = new BleAdapter(this, bluetoothAdapter);
-
-        AsyncTask.execute(new Runnable() {
-
-                //serviceThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-
-                Intent cadenceService = new Intent();
-
-                cadenceService.setClass(MainActivity.this, CadenceService.class);
-
-                while (true) {
-
-                    if (!MainActivity.this.running)
-                        continue;
-
-                    Float data = bleAdapter.getNextGattValue();
-
-                    if (data != null)
-                        cadenceService.putExtra(CadenceService.BLE_VALUE_ID, data);
-
-                    startService(cadenceService);
-
-                    try {
-                        Thread.sleep(0, 500000);
-                    } catch (Exception ignored) {}
-                }
-            }
-        });
-
-        //serviceThread.start();
+        mainTask = new MainTask(bleAdapter);
     }
 
     private void enableBluetoothServices () {
@@ -180,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onPause();
 
-        running = false;
         playbackButton.setText(R.string.button_run);
 
         if (bleAdapter != null)
@@ -192,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onStop();
 
-        running = false;
         playbackButton.setText(R.string.button_run);
 
         if (bleAdapter != null)
@@ -206,10 +169,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onDestroy();
 
-       /*try {
-            serviceThread.join();
-        } catch (Exception ignored) {}*/
-
         bleAdapter.disableNotifications();
 
         unregisterReceiver(cadenceReceiver);
@@ -220,14 +179,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         running = !running;
 
-        if (running)
-            playbackButton.setText(R.string.button_stop);
+        if (running) {
+
+            mainTask.execute(this);
+            bleAdapter.enableNotifications();
+        }
 
         else {
 
-            playbackButton.setText(R.string.button_run);
-
-            cadenceView.setText(R.string.default_cadence_text);
+            mainTask.stopTask();
+            bleAdapter.disableNotifications();
         }
     }
 }
