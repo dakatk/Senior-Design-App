@@ -15,11 +15,12 @@ public class CadenceService extends IntentService {
     public static final String BLE_VALUE_ID = "ble_value";
 
     private Intent sendIntent;
-    private FFT fft;
 
-    private ArrayList<Double> fftBuffer;
+    private static ArrayList<Double> fftBuffer = new ArrayList<>();
+    private static FFT fft = new FFT();
 
-    private double prevFFTValue;
+    private static double prevFFTValue = -1.0;
+    private static float lastBleValue = 0.0f;
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
@@ -28,13 +29,8 @@ public class CadenceService extends IntentService {
 
         super("Cadence Service");
 
-        fftBuffer = new ArrayList<>();
-        fft = new FFT();
-
         sendIntent = new Intent();
         sendIntent.setAction(BROADCAST_ID);
-
-        prevFFTValue = -1.0;
     }
 
     @Override
@@ -45,11 +41,21 @@ public class CadenceService extends IntentService {
 
         float bleValue = intent.getFloatExtra(BLE_VALUE_ID, 0.0f);
 
-        fftBuffer.add((double)bleValue);
+        sendIntent.putExtra(VALUE_ID, (double)bleValue);
+        sendBroadcast(sendIntent);
 
-        if (fftBuffer.size() >= 256) {
+        /*if (bleValue == lastBleValue)
+            return;
+
+        lastBleValue = bleValue;
+
+        fftBuffer.add((double)bleValue);
+        //System.out.println(fftBuffer.size());
+
+        if (fftBuffer.size() >= 128) {
 
             double fftCalc = fft.centerFrequency(fftBuffer, 250);
+            //System.out.println("FFT");
             fftBuffer.clear();
 
             if (prevFFTValue == -1.0)
@@ -60,6 +66,6 @@ public class CadenceService extends IntentService {
 
             sendIntent.putExtra(VALUE_ID, prevFFTValue);
             sendBroadcast(sendIntent);
-        }
+        }*/
     }
 }

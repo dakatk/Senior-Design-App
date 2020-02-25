@@ -27,7 +27,6 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.BluetoothService" />
         <service android:name=".service.CadenceService" />
 
     </application>

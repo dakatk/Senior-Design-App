@@ -15,14 +15,11 @@ import android.os.AsyncTask;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
 
-import androidx.core.content.res.TypedArrayUtils;
 import semicolon.com.seniordesignapp.R;
 
 import static android.bluetooth.BluetoothAdapter.STATE_CONNECTED;
@@ -40,13 +37,15 @@ public class BleAdapter {
 
     private Context context;
 
-    private ArrayList<byte[]> valuesBuffer;
+    //private static ArrayList<byte[]> valuesBuffer = new ArrayList<>();
 
-    public BleAdapter (Context context, BluetoothAdapter bluetoothAdapter) {
+    private static boolean gattChanged = false;
+    private static byte[] gattValue;
+
+    public BleAdapter (Context context, @NotNull BluetoothAdapter bluetoothAdapter) {
 
         this.context = context;
 
-        valuesBuffer = new ArrayList<>();
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
 
         AsyncTask.execute(new Runnable() {
@@ -63,6 +62,9 @@ public class BleAdapter {
 
     public void enableNotifications() {
 
+        if (characteristic == null)
+            return;
+
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
 
@@ -70,6 +72,9 @@ public class BleAdapter {
     }
 
     public void disableNotifications() {
+
+        if (characteristic == null)
+            return;
 
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
         descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
@@ -127,30 +132,36 @@ public class BleAdapter {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, @NotNull BluetoothGattCharacteristic characteristic) {
 
-            //System.out.println("CHAR CHANGED");
+            System.out.println("CHAR CHANGED");
 
-            valuesBuffer.add(characteristic.getValue());
+            if (!gattChanged) {
+
+                gattValue = characteristic.getValue();
+                gattChanged = true;
+            }
+
+            /*valuesBuffer.add(characteristic.getValue());
 
             if (valuesBuffer.size() >= 2000)
-                valuesBuffer.remove(0);
+                valuesBuffer.remove(0);*/
         }
     };
 
     public Float getNextGattValue() {
 
+        float value = ByteBuffer.wrap(gattValue).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+
+        gattChanged = false;
+
+        return value;
+
+        /*
         if (valuesBuffer.size() == 0)
             return null;
 
         byte[] value = valuesBuffer.remove(valuesBuffer.size() - 1);
 
-        for (int i = 0; i < 2; i ++) {
-
-            byte temp = value[i];
-            value[i] = value[3 - i];
-            value[3 - i] = temp;
-        }
-
-        return ByteBuffer.wrap(value).getFloat();
+        return ByteBuffer.wrap(value).order(ByteOrder.LITTLE_ENDIAN).getFloat();*/
     }
 
     @NotNull

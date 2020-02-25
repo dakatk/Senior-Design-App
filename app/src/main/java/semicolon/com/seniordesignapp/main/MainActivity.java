@@ -15,6 +15,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -28,11 +29,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final static int REQUEST_ENABLE_BT = 1;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 1;
 
+    private TextView cadenceView;
+    private SeekBar cadenceDiff;
+
     private CadenceReceiver cadenceReceiver;
     private Thread serviceThread;
 
     private BluetoothAdapter bluetoothAdapter;
     private Button playbackButton;
+
+    private BleAdapter bleAdapter;
 
     private boolean running = false;
 
@@ -45,8 +51,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playbackButton = findViewById(R.id.playback_button);
         playbackButton.setOnClickListener(this);
 
-        TextView cadenceView = findViewById(R.id.show_cadence);
-        SeekBar cadenceDiff = findViewById(R.id.difference_seekbar);
+        cadenceView = findViewById(R.id.show_cadence);
+        cadenceDiff = findViewById(R.id.difference_seekbar);
 
         cadenceReceiver = new CadenceReceiver(cadenceView, cadenceDiff);
 
@@ -58,9 +64,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         enableLocationServices();
         enableBluetoothServices();
 
-        final BleAdapter bleAdapter = new BleAdapter(this, bluetoothAdapter);
+        bleAdapter = new BleAdapter(this, bluetoothAdapter);
 
-        serviceThread = new Thread(new Runnable() {
+        AsyncTask.execute(new Runnable() {
+
+                //serviceThread = new Thread(new Runnable() {
 
             @Override
             public void run() {
@@ -82,13 +90,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     startService(cadenceService);
 
                     try {
-                        Thread.sleep(1);
+                        Thread.sleep(0, 500000);
                     } catch (Exception ignored) {}
                 }
             }
         });
 
-        serviceThread.start();
+        //serviceThread.start();
     }
 
     private void enableBluetoothServices () {
@@ -160,8 +168,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onResume();
 
-        // enableBluetoothServices();
-        // enableLocationServices();
+        enableLocationServices();
+        enableBluetoothServices();
+
+        if (bleAdapter != null)
+            bleAdapter.enableNotifications();
     }
 
     @Override
@@ -171,6 +182,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         running = false;
         playbackButton.setText(R.string.button_run);
+
+        if (bleAdapter != null)
+            bleAdapter.disableNotifications();
     }
 
     @Override
@@ -180,6 +194,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         running = false;
         playbackButton.setText(R.string.button_run);
+
+        if (bleAdapter != null)
+            bleAdapter.disableNotifications();
     }
 
     @Override
@@ -189,9 +206,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onDestroy();
 
-        try {
+       /*try {
             serviceThread.join();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {}*/
+
+        bleAdapter.disableNotifications();
 
         unregisterReceiver(cadenceReceiver);
     }
@@ -204,6 +223,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (running)
             playbackButton.setText(R.string.button_stop);
 
-        else playbackButton.setText(R.string.button_run);
+        else {
+
+            playbackButton.setText(R.string.button_run);
+
+            cadenceView.setText(R.string.default_cadence_text);
+        }
     }
 }
