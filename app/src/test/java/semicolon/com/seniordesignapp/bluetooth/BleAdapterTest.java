@@ -12,21 +12,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.util.UUID;
 
-import semicolon.com.seniordesignapp.BuildConfig;
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@RunWith(JUnit4.class)
 public class BleAdapterTest {
 
     @Mock
@@ -48,7 +45,8 @@ public class BleAdapterTest {
     Context mockContext;
 
     private byte[] testGattValue = new byte[]{
-            0x42, 0x58, 0x00, 0x00
+            0x00, 0x00, 0x58, 0x42
+            // 0x42, 0x58, 0x00, 0x00
     };
 
     private BleAdapter testBleAdapter;
@@ -59,7 +57,7 @@ public class BleAdapterTest {
         MockitoAnnotations.initMocks(this);
 
         when(mockDevice.getAddress()).thenReturn("CC:ED:12:C6:04:E9");
-        when(mockDevice.connectGatt(mockContext, true, any(BluetoothGattCallback.class))).thenReturn(mockGatt);
+        when(mockDevice.connectGatt(any(Context.class), any(Boolean.class), any(BluetoothGattCallback.class))).thenReturn(mockGatt);
 
         when(mockGatt.getService(any(UUID.class))).thenReturn(mockService);
         when(mockService.getCharacteristic(any(UUID.class))).thenReturn(mockCharacteristic);
@@ -73,7 +71,11 @@ public class BleAdapterTest {
     @Test
     public void testGatt () {
 
+        assertEquals(mockDevice.getAddress(), "CC:ED:12:C6:04:E9");
+
         testBleAdapter.getGattCallback().onCharacteristicChanged(mockGatt, mockCharacteristic);
+
         assertNotNull(testBleAdapter.getNextGattValue());
+        assertEquals(54.0f, testBleAdapter.getNextGattValue(), 0.0f);
     }
 }
