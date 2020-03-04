@@ -1,12 +1,20 @@
 package semicolon.com.seniordesignapp.fft;
 
+import org.jetbrains.annotations.Contract;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public class FFTTest {
 
-    private Double[] testValues = {
+    private final Double[] testValues = {
 
             2.69,16.11,21.00,70.80,105.16,105.22,99.85,91.80,68.05,57.86,47.97,38.33,21.61,13.67,4.70,-4.64,-24.72,
             -34.97,-44.80,-53.89,-70.56,-77.58,-84.23,-90.33,-101.68,-107.12,-111.88,-117.86,-132.39,-142.15,-150.21,-155.15,
@@ -40,5 +48,33 @@ public class FFTTest {
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
     };
 
+    private static final double TARGET_0 = 87.89;
+    private static final double TARGET_1 = 58.59;
 
+    private FFT fft;
+
+    @Before
+    public void initFFT() {
+        fft = new FFT();
+    }
+
+    @Test
+    public void testFftReturnsCorrectFrequencies () {
+
+        List<Double> fftValues = Arrays.asList(testValues).subList(0, 256);
+
+        double cadence0 = fft.centerFrequency(fftValues) * 30.0;
+        assertEquals(roundTo(cadence0), TARGET_0, 0.0);
+
+        fftValues = Arrays.asList(testValues).subList(256, 512);
+
+        double cadence1 = fft.centerFrequency(fftValues) * 30.0;
+        assertEquals(roundTo(cadence1), TARGET_1, 0.0);
+
+    }
+
+    @Contract(pure = true)
+    private double roundTo(double a) {
+        return (int)(a * 100) / 100.0;
+    }
 }

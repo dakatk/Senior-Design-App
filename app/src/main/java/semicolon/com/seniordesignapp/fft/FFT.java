@@ -14,6 +14,11 @@ import semicolon.com.seniordesignapp.fft.maths.Complex;
 public class FFT {
 
     /**
+     * The assumed sampling frequency of all input data
+     */
+    private final double SAMPLING_FREQUENCY = 250;
+
+    /**
      * Bit reversal algorithm, altered for use with FFT
      *
      * @param n n
@@ -102,10 +107,9 @@ public class FFT {
      * For max magnitude at indices n0 and N - n0, Fsin = (Fs * n0) / N
      *
      * @param values values
-     * @param samplingFreq samplingFreq
      * @return Sinusoidal frequency of computed FFT values given a list of data
      */
-    public double centerFrequency(@NotNull List<Double> values, double samplingFreq) {
+    public double centerFrequency(@NotNull List<Double> values) {
 
         final int n = values.size();
 
@@ -125,6 +129,6 @@ public class FFT {
             }
         }
 
-        return (samplingFreq * maxIndex) / n;
+        return (SAMPLING_FREQUENCY * maxIndex) / n;
     }
 }

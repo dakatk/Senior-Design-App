@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import androidx.annotation.Nullable;
 import semicolon.com.seniordesignapp.fft.FFT;
 
+/**
+ * Service that's run from the main background task whose sole purpose is to use
+ * the runner's most recent motion data read from the bluetooth device to calculate
+ * the FFT so that the runner can see their current cadence
+ */
 public class CadenceService extends IntentService {
 
     // ID's to filter the extra data sent with each service, and
@@ -50,7 +55,7 @@ public class CadenceService extends IntentService {
         // If we have enough values, calculate the FFT and send it to the receiver
         if (fftBuffer.size() >= 256) {
 
-            sendIntent.putExtra(VALUE_ID, fft.centerFrequency(fftBuffer, 250));
+            sendIntent.putExtra(VALUE_ID, fft.centerFrequency(fftBuffer));
             sendBroadcast(sendIntent);
         }
     }
