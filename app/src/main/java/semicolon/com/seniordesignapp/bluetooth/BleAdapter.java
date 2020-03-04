@@ -23,30 +23,73 @@ import semicolon.com.seniordesignapp.R;
 
 import static android.bluetooth.BluetoothAdapter.STATE_CONNECTED;
 
+/**
+ * A container class for all the BLE stuff. This class is responsible for:
+ *  - Findind and bonding with the correct bluetooth device
+ *  - Extracting the relevant information about the bluetooth device's GATT (Generic ATTribute) stuff
+ *  - Reading data from/Writing data to the bluetooth in specific ways
+ */
 public class BleAdapter {
 
+    // The UUIDs of the pre-defined service and it's associated characteristic in the Arduino code
     private static final UUID CADENCE_SERVICE_UUID = convertFromInteger(0x1111);
     private static final UUID CADENCE_DATA_CHAR_UUID = convertFromInteger(0x2222);
+    private static final UUID NTF_DESCRIPTOR_UUID = convertFromInteger(0x2902);//UUID.fromString("00002902–0000–1000-8000-00805f9b34fb");
 
+    /**
+     * Scanner that is used to manage callbacks for identifying/bonding to our
+     * bluetooth device
+     */
     private BluetoothLeScanner bluetoothLeScanner;
+
+    /**
+     * Retains the reference to our bluetooth device, once it has been properly
+     * identified and bonded
+     */
     private BluetoothDevice pairedDevice;
 
+    /**
+     * The GATT object that is created to identify/write to our device's services and
+     * their corresponding characteristics
+     */
     private BluetoothGatt gatt;
+
+    /**
+     * Reference to the main characteristic (value) that will be read from our bluetooth
+     * device. In this case, the characteristic will always read four bytes that translate into
+     * a floating point value
+     */
     private BluetoothGattCharacteristic characteristic;
 
+    /**
+     * The buitlin descriptor of our bluetooth device that enables/disables the device to
+     * notify our app that GATT data has been changed
+     */
+    private BluetoothGattDescriptor descriptor;
+
+    /**
+     * Reference to the parent of our MainActivity
+     */
     private Context context;
 
-    //private static ArrayList<byte[]> valuesBuffer = new ArrayList<>();
-
-    private static boolean gattChanged = false;
+    /**
+     * Retains the four bytes that are received onCharacteristicChanged (made static because reasons)
+     */
     private static byte[] gattValue;
 
+    /** The main constructor that initializes bonding and identifying the device and it's services.
+     * USE THIS CONSTRUCTOR IN MAIN ACTIVITY
+     *
+     * @param context context
+     * @param bluetoothAdapter bluetoothAdapter
+     */
     public BleAdapter (Context context, @NotNull BluetoothAdapter bluetoothAdapter) {
 
         this.context = context;
 
         bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
 
+        // Start scanning for our device as a background task
         AsyncTask.execute(new Runnable() {
 
             @Override
@@ -56,56 +99,81 @@ public class BleAdapter {
         });
     }
 
+    /**
+     * USE FOR UNIT TESTS ONLY (bypasses pairing callbacks)
+     *
+     * @param device device
+     */
+    BleAdapter (Context context, @NotNull BluetoothDevice device) {
+
+        pairedDevice = device;
+        device.connectGatt(context, true, gattCallback);
+    }
+
+    /**
+     * Send a code to enable the bluetooth device to send data via GATT
+     */
     public void enableNotifications() {
 
         if (characteristic == null)
             return;
 
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-
         gatt.writeDescriptor(descriptor);
     }
 
+    /**
+     * Send a code to disable the bluetooth device from sending data via GATT
+     */
     public void disableNotifications() {
 
         if (characteristic == null)
             return;
 
-        BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
         descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-
         gatt.writeDescriptor(descriptor);
     }
 
+    /**
+     * Callback to scan for the correct bluetooth device to bond with
+     */
     private ScanCallback leScanCallback = new ScanCallback() {
 
         @Override
         public void onScanResult(int callbackType, @NotNull ScanResult result) {
 
+            // Don't continue to scan if the device has been bonded
             if (pairedDevice != null)
                 return;
 
+            // Don't attempt to bond if the device isn't valid
             if (result.getDevice() == null)
                 return;
 
             BluetoothDevice device = result.getDevice();
             String address = device.getAddress();
 
-            if (address != null && address.equals(context.getString(R.string.controller_mac_addr))) {
+            // Make sure the MAC address is valid and that it matches the address of our bluetooth device
+            if (address != null && address.equals(context.getString(R.string.ble_device_mac_addr))) {
 
                 System.out.println("Device Paired!");
 
+                // Begin the process of extracting GATT stuff (services/characteristics/descriptors)
                 gatt = device.connectGatt(context, true, gattCallback);
                 pairedDevice = device;
             }
         }
     };
 
+    /**
+     * Callback for when the GATT stuff is extracted from the bonded device
+     */
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
 
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+
+            // System.out.println("ON CONNECTION STATE CHANGE");
 
             if (newState == STATE_CONNECTED)
                 gatt.discoverServices();
@@ -114,40 +182,57 @@ public class BleAdapter {
         @Override
         public void onServicesDiscovered(@NotNull BluetoothGatt gatt, int status) {
 
+            // System.out.println("ON SERVICES DISCOVERED");
+
             characteristic = gatt.getService(CADENCE_SERVICE_UUID).getCharacteristic(CADENCE_DATA_CHAR_UUID);
             gatt.setCharacteristicNotification(characteristic, true);
 
-            BluetoothGattDescriptor descriptor = characteristic.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            descriptor = characteristic.getDescriptor(NTF_DESCRIPTOR_UUID);
 
-            gatt.writeDescriptor(descriptor);
+            enableNotifications();
 
-            bluetoothLeScanner.stopScan(leScanCallback);
+            try {
+                bluetoothLeScanner.stopScan(leScanCallback);
+            } catch (NullPointerException ignored) {}
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, @NotNull BluetoothGattCharacteristic characteristic) {
 
-            if (!gattChanged) {
-
-                gattValue = characteristic.getValue();
-                gattChanged = true;
-            }
+            // System.out.println("ON CHARACTERISTIC CHANGED");
+            gattValue = characteristic.getValue();
         }
     };
 
+    /**
+     * AGAIN, USED FOR UNIT TESTS ONLY
+     *
+     * @return gattCallback
+     */
+    BluetoothGattCallback getGattCallback () {
+        return gattCallback;
+    }
+
+    /**
+     * @return The most recent value received from the GATT characterstic
+     */
     public Float getNextGattValue() {
 
+        // This shouldn't happen... but sometimes it does for some reason.
+        // Basically, just ignore it if it does happen... because it shouldn't...
         if (gattValue == null)
             return null;
 
-        float value = ByteBuffer.wrap(gattValue).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-
-        gattChanged = false;
-
-        return value;
+        // Transform the four bytes that were read by from the GATT cahracteristic into a float
+        return ByteBuffer.wrap(gattValue).order(ByteOrder.LITTLE_ENDIAN).getFloat();
     }
 
+    /**
+     * It works. Just trust it and leave it alone
+     *
+     * @param i i
+     * @return uuid
+     */
     @NotNull
     @Contract("_ -> new")
     private static UUID convertFromInteger(int i) {

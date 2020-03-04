@@ -4,15 +4,22 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 import semicolon.com.seniordesignapp.fft.maths.Complex;
 
+/**
+ *
+ */
 public class FFT {
 
-    // Bit reversal algorithm, altered for use with FFT
+    /**
+     * Bit reversal algorithm, altered for use with FFT
+     *
+     * @param n n
+     * @param bits bits
+     * @return n with bits reversed
+     */
     @Contract(pure = true)
     private int bitReverse(int n, int bits) {
 
@@ -29,6 +36,13 @@ public class FFT {
         return ((reversed << count) & ((1 << bits) - 1));
     }
 
+    /**
+     * Swaps buffer[i] with buffer[j]
+     *
+     * @param buffer buffer
+     * @param i i
+     * @param j j
+     */
     private void swap(@NotNull List<Complex> buffer, int i, int j) {
 
         Complex temp = buffer.get(j);
@@ -37,6 +51,12 @@ public class FFT {
         buffer.set(i, temp);
     }
 
+    /**
+     * Compute the FFT values given a radix-2 sized array of data
+     *
+     * @param values values
+     * @return computed frequencies
+     */
     @NotNull
     private ArrayList<Complex> compute(List<Double> values) {
 
@@ -78,24 +98,32 @@ public class FFT {
         return buffer;
     }
 
-    // Formula: for max magnitude at indices n0 and N - n0, Fsin = (Fs * n0) / N
+    /**
+     * For max magnitude at indices n0 and N - n0, Fsin = (Fs * n0) / N
+     *
+     * @param values values
+     * @param samplingFreq samplingFreq
+     * @return Sinusoidal frequency of computed FFT values given a list of data
+     */
     public double centerFrequency(@NotNull List<Double> values, double samplingFreq) {
 
         final int n = values.size();
 
         List<Complex> fft = this.compute(values);
-        final List<Double> magnitudes = new ArrayList<>();
 
-        fft.forEach(new Consumer<Complex>() {
+        double maxValue = fft.get(0).magnitude();
+        int maxIndex = 0;
 
-            @Override
-            public void accept(Complex value) {
-                magnitudes.add(value.magnitude());
+        for (int i = 1; i < n / 2; i ++) {
+
+            Complex c = fft.get(i);
+
+            if (c.magnitude() >= maxValue) {
+
+                maxIndex = i;
+                maxValue = c.magnitude();
             }
-        });
-
-        Double localMax = Collections.max(magnitudes.subList(0, n / 2));
-        int maxIndex = magnitudes.indexOf(localMax);
+        }
 
         return (samplingFreq * maxIndex) / n;
     }

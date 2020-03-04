@@ -11,6 +11,10 @@ import org.jetbrains.annotations.NotNull;
 
 import semicolon.com.seniordesignapp.service.CadenceService;
 
+/**
+ * After the cadence analysis service has run, this class communicates the
+ * values it receives weith the UI thread
+ */
 public class CadenceReceiver extends BroadcastReceiver {
 
     private TextView view;

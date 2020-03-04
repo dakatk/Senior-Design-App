@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MainTask mainTask;
 
     private boolean running = false;
+    private boolean paused = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +102,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    public boolean isPaused() {
+        return paused;
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults) {
 
@@ -133,6 +138,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         super.onResume();
 
+        if (!paused)
+            return;
+
+        paused = false;
+
         enableLocationServices();
         enableBluetoothServices();
 
@@ -144,6 +154,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onPause() {
 
         super.onPause();
+
+        paused = true;
 
         playbackButton.setText(R.string.button_run);
 

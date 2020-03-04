@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class Complex {
+public class Complex implements Comparable<Complex> {
 
     private double real;
     private double imag;
@@ -63,5 +63,20 @@ public class Complex {
     @Override
     public String toString() {
         return String.format("(%f,%f)", this.real, this.imag);
+    }
+
+    @Override
+    public int compareTo(@NotNull Complex other) {
+
+        double m = magnitude();
+        double n = other.magnitude();
+
+        if (m > n)
+            return 1;
+
+        else if (m < n)
+            return -1;
+
+        return 0;
     }
 }

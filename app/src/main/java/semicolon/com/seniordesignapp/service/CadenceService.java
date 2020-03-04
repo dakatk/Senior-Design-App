@@ -10,23 +10,26 @@ import semicolon.com.seniordesignapp.fft.FFT;
 
 public class CadenceService extends IntentService {
 
+    // ID's to filter the extra data sent with each service, and
+    // make sure our receiver knows that the service it's sent is valid
     public static final String BROADCAST_ID = "cadence_send";
     public static final String VALUE_ID = "cadence_value";
     public static final String BLE_VALUE_ID = "ble_value";
 
+    /**
+     * The new intent that sends data from this service to the receiver
+     */
     private Intent sendIntent;
 
     private static ArrayList<Double> fftBuffer = new ArrayList<>();
     private static FFT fft = new FFT();
-
-    private static double prevFFTValue = -1.0;
-    private static float lastBleValue = 0.0f;
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
      */
     public CadenceService() {
 
+        // This does a thing
         super("Cadence Service");
 
         sendIntent = new Intent();
@@ -39,33 +42,16 @@ public class CadenceService extends IntentService {
         if (intent == null)
             return;
 
+        // Extract the data sent from the instance that ran this service
         float bleValue = intent.getFloatExtra(BLE_VALUE_ID, 0.0f);
 
-        sendIntent.putExtra(VALUE_ID, (double)bleValue);
-        sendBroadcast(sendIntent);
-
-        /*if (bleValue == lastBleValue)
-            return;
-
-        lastBleValue = bleValue;
-
         fftBuffer.add((double)bleValue);
-        //System.out.println(fftBuffer.size());
 
-        if (fftBuffer.size() >= 128) {
+        // If we have enough values, calculate the FFT and send it to the receiver
+        if (fftBuffer.size() >= 256) {
 
-            double fftCalc = fft.centerFrequency(fftBuffer, 250);
-            //System.out.println("FFT");
-            fftBuffer.clear();
-
-            if (prevFFTValue == -1.0)
-                prevFFTValue = fftCalc;
-
-            else
-                prevFFTValue = (prevFFTValue + fftCalc) / 2.0;
-
-            sendIntent.putExtra(VALUE_ID, prevFFTValue);
+            sendIntent.putExtra(VALUE_ID, fft.centerFrequency(fftBuffer, 250));
             sendBroadcast(sendIntent);
-        }*/
+        }
     }
 }
