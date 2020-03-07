@@ -23,6 +23,8 @@ import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
 
+// TODO needs user input section (Fragment possibly?) which will effect the extrema of the SeekBar
+// TODO Change the appearance of the SeekBar
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final static int REQUEST_ENABLE_BT = 1;

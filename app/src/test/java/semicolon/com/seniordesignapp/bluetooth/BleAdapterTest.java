@@ -23,6 +23,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ * SDRD 3.1, untimed
+ */
 @RunWith(JUnit4.class)
 public class BleAdapterTest {
 

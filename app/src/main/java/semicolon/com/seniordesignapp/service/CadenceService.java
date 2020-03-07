@@ -24,7 +24,7 @@ public class CadenceService extends IntentService {
     /**
      * The new intent that sends data from this service to the receiver
      */
-    private Intent sendIntent;
+    private final Intent sendIntent = new Intent(BROADCAST_ID);
 
     private static ArrayList<Double> fftBuffer = new ArrayList<>();
     private static FFT fft = new FFT();
@@ -37,8 +37,7 @@ public class CadenceService extends IntentService {
         // This does a thing
         super("Cadence Service");
 
-        sendIntent = new Intent();
-        sendIntent.setAction(BROADCAST_ID);
+       // sendIntent = new Intent(BROADCAST_ID);
     }
 
     @Override
@@ -56,6 +55,8 @@ public class CadenceService extends IntentService {
         if (fftBuffer.size() >= 256) {
 
             sendIntent.putExtra(VALUE_ID, fft.centerFrequency(fftBuffer));
+            fftBuffer.clear();
+
             sendBroadcast(sendIntent);
         }
     }
