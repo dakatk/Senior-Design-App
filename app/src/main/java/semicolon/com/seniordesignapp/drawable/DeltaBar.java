@@ -5,7 +5,7 @@ import android.graphics.Canvas;
 import android.view.View;
 
 /**
- * A variant of the SeekBar view that visually displays a given delta between the maximum and minimum extremes
+ * Same idea as the SeekBar view, visually displays a given delta between the maximum and minimum extrema
  * That the delta should be allowed to reach
  */
 public class DeltaBar extends View {
@@ -38,6 +38,6 @@ public class DeltaBar extends View {
     @Override
     protected void onDraw(Canvas canvas) {
 
-
+        // TODO draw the thing
     }
 }
