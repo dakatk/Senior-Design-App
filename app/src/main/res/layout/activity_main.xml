@@ -6,20 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".main.MainActivity">
 
-    <SeekBar
-        android:id="@+id/difference_seekbar"
-        style="@android:style/Widget.SeekBar"
-        android:layout_width="370dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="228dp"
-        android:max="160"
-        android:progress="80"
-        android:progressTint="#CDD52424"
-        android:rotation="270"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <TextView
         android:id="@+id/show_cadence"
         android:layout_width="wrap_content"
@@ -31,6 +17,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/image_view"
+        android:layout_width="54sp"
+        android:layout_height="54sp"
+        android:layout_marginBottom="100dp"
+        android:src="@drawable/red_up_arrow"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/show_cadence"
+
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView

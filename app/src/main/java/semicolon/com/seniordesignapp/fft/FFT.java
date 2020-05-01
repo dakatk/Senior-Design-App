@@ -13,10 +13,7 @@ import semicolon.com.seniordesignapp.fft.maths.Complex;
  */
 public class FFT {
 
-    /**
-     * The assumed sampling frequency of all input data
-     */
-    private final double SAMPLING_FREQUENCY = 250;
+    private FFT() {}
 
     /**
      * Bit reversal algorithm, altered for use with FFT
@@ -26,7 +23,7 @@ public class FFT {
      * @return n with bits reversed
      */
     @Contract(pure = true)
-    private int bitReverse(int n, int bits) {
+    private static int bitReverse(int n, int bits) {
 
         int reversed = n;
         int count = bits - 1;
@@ -48,7 +45,7 @@ public class FFT {
      * @param i i
      * @param j j
      */
-    private void swap(@NotNull List<Complex> buffer, int i, int j) {
+    private static void swap(@NotNull List<Complex> buffer, int i, int j) {
 
         Complex temp = buffer.get(j);
 
@@ -63,7 +60,7 @@ public class FFT {
      * @return computed frequencies
      */
     @NotNull
-    private ArrayList<Complex> compute(List<Double> values) {
+    private static ArrayList<Complex> compute(float[] values) {
 
         ArrayList<Complex> buffer = Complex.fromScalars(values);
 
@@ -73,7 +70,6 @@ public class FFT {
         for (int j = 1; j < buffer.size() / 2; j ++) {
 
             int swapPos = bitReverse(j, bits);
-
             swap(buffer, swapPos, j);
         }
 
@@ -93,7 +89,7 @@ public class FFT {
                     double term = (-2 * Math.PI * k) / (double)n;
 
                     // Identity: e^(j * x) = cos(x) + (j * sin(x))
-                    Complex exp = new Complex(Math.cos(term), Math.sin(term)).mul(odd);
+                    Complex exp = new Complex((float)Math.cos(term), (float)Math.sin(term)).mul(odd);
 
                     buffer.set(evenIndex, even.add(exp));
                     buffer.set(oddIndex, even.sub(exp));
@@ -109,11 +105,11 @@ public class FFT {
      * @param values values
      * @return Sinusoidal frequency of computed FFT values given a list of data
      */
-    public double centerFrequency(@NotNull List<Double> values) {
+    public static float centerFrequency(@NotNull float[] values) {
 
-        final int n = values.size();
+        final int n = values.length;
 
-        List<Complex> fft = this.compute(values);
+        List<Complex> fft = compute(values);
 
         double maxValue = fft.get(0).magnitude();
         int maxIndex = 0;
@@ -129,6 +125,8 @@ public class FFT {
             }
         }
 
-        return (SAMPLING_FREQUENCY * maxIndex) / n;
+        float sampling_freq = 250.0f;
+
+        return (sampling_freq * maxIndex) / n;
     }
 }

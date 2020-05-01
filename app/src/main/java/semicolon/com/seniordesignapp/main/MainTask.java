@@ -44,30 +44,27 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
 
         cadenceService.setClass(mainActivity, CadenceService.class);
 
+        float[] gattValues = new float[256];
+        int index = 0;
+
         while (running) {
 
-            if (mainActivity.isPaused())
+            if (mainActivity.isPaused() || !bleAdapter.hasPairedDevice())
                 continue;
 
-            // Allow reading data from the bluetooth device
-            bleAdapter.enableNotifications();
-
-            // Wait
-            try {
-                Thread.sleep(0, 200000);
-            } catch (Exception ignored) {}
+            if (!CadenceService.ready)
+                continue;
 
             // Record the data that was read from the bluetooth device
-            Float data = bleAdapter.getNextGattValue();
+            gattValues[index ++] = bleAdapter.getNextGattValue();
 
-            // Disable reading from the bluetooth device
-            bleAdapter.disableNotifications();
+            if (index >= gattValues.length) {
 
-            // Bind the data to the background service and run it
-            if (data != null)
-                cadenceService.putExtra(CadenceService.BLE_VALUE_ID, data);
+                cadenceService.putExtra(CadenceService.BLE_VALUE_ID, gattValues);
+                mainActivity.startService(cadenceService);
 
-            mainActivity.startService(cadenceService);
+                index = 0;
+            }
         }
         return null;
     }

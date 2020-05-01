@@ -3,8 +3,6 @@ package semicolon.com.seniordesignapp.service;
 import android.app.IntentService;
 import android.content.Intent;
 
-import java.util.ArrayList;
-
 import androidx.annotation.Nullable;
 import semicolon.com.seniordesignapp.fft.FFT;
 
@@ -21,13 +19,12 @@ public class CadenceService extends IntentService {
     public static final String VALUE_ID = "cadence_value";
     public static final String BLE_VALUE_ID = "ble_value";
 
+    public static boolean ready = false;
+
     /**
      * The new intent that sends data from this service to the receiver
      */
     private final Intent sendIntent = new Intent(BROADCAST_ID);
-
-    private static ArrayList<Double> fftBuffer = new ArrayList<>();
-    private static FFT fft = new FFT();
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
@@ -36,8 +33,6 @@ public class CadenceService extends IntentService {
 
         // This does a thing
         super("Cadence Service");
-
-       // sendIntent = new Intent(BROADCAST_ID);
     }
 
     @Override
@@ -47,17 +42,15 @@ public class CadenceService extends IntentService {
             return;
 
         // Extract the data sent from the instance that ran this service
-        float bleValue = intent.getFloatExtra(BLE_VALUE_ID, 0.0f);
+        float[] bleValues = intent.getFloatArrayExtra(BLE_VALUE_ID);
 
-        fftBuffer.add((double)bleValue);
+        if (bleValues == null)
+            return;
 
-        // If we have enough values, calculate the FFT and send it to the receiver
-        if (fftBuffer.size() >= 256) {
+        ready = false;
+        sendIntent.putExtra(VALUE_ID, FFT.centerFrequency(bleValues)  * 30.0f);
+        ready = true;
 
-            sendIntent.putExtra(VALUE_ID, fft.centerFrequency(fftBuffer));
-            fftBuffer.clear();
-
-            sendBroadcast(sendIntent);
-        }
+        sendBroadcast(sendIntent);
     }
 }

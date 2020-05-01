@@ -55,13 +55,6 @@ public class BleAdapter {
     private BluetoothGatt gatt;
 
     /**
-     * Reference to the main characteristic (value) that will be read from our bluetooth
-     * device. In this case, the characteristic will always read four bytes that translate into
-     * a floating point value
-     */
-    private BluetoothGattCharacteristic characteristic;
-
-    /**
      * The buitlin descriptor of our bluetooth device that enables/disables the device to
      * notify our app that GATT data has been changed
      */
@@ -75,7 +68,9 @@ public class BleAdapter {
     /**
      * Retains the four bytes that are received onCharacteristicChanged (made static because reasons)
      */
-    private static byte[] gattValue;
+    private byte[] gattValue;
+
+    private boolean gattChanged;
 
     /** The main constructor that initializes bonding and identifying the device and it's services.
      * USE THIS CONSTRUCTOR IN MAIN ACTIVITY
@@ -86,8 +81,9 @@ public class BleAdapter {
     public BleAdapter (Context context, @NotNull BluetoothAdapter bluetoothAdapter) {
 
         this.context = context;
+        this.bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
 
-        bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
+        this.gattChanged = false;
 
         // Start scanning for our device as a background task
         AsyncTask.execute(new Runnable() {
@@ -106,32 +102,35 @@ public class BleAdapter {
      */
     BleAdapter (Context context, @NotNull BluetoothDevice device) {
 
-        pairedDevice = device;
+        this.pairedDevice = device;
         device.connectGatt(context, true, gattCallback);
     }
 
     /**
-     * Send a code to enable the bluetooth device to send data via GATT
+     * Send a code to enable/disable the bluetooth device to send data via GATT
      */
-    public void enableNotifications() {
+    public void enableNotifications(boolean enable) {
 
-        if (characteristic == null)
+        if (descriptor == null)
             return;
 
-        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        byte[] descriptorValue;
+
+        if (enable)
+            descriptorValue = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE;
+
+        else descriptorValue = BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE;
+
+        descriptor.setValue(descriptorValue);
         gatt.writeDescriptor(descriptor);
     }
 
     /**
-     * Send a code to disable the bluetooth device from sending data via GATT
+     * @return true if device has been found and paired successfully
      */
-    public void disableNotifications() {
+    public boolean hasPairedDevice() {
 
-        if (characteristic == null)
-            return;
-
-        descriptor.setValue(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE);
-        gatt.writeDescriptor(descriptor);
+        return pairedDevice != null;
     }
 
     /**
@@ -143,7 +142,7 @@ public class BleAdapter {
         public void onScanResult(int callbackType, @NotNull ScanResult result) {
 
             // Don't continue to scan if the device has been bonded
-            if (pairedDevice != null)
+            if (BleAdapter.this.pairedDevice != null)
                 return;
 
             // Don't attempt to bond if the device isn't valid
@@ -159,8 +158,8 @@ public class BleAdapter {
                 System.out.println("Device Paired!");
 
                 // Begin the process of extracting GATT stuff (services/characteristics/descriptors)
-                gatt = device.connectGatt(context, true, gattCallback);
-                pairedDevice = device;
+                BleAdapter.this.gatt = device.connectGatt(context, true, gattCallback);
+                BleAdapter.this.pairedDevice = device;
             }
         }
     };
@@ -184,15 +183,15 @@ public class BleAdapter {
 
             // System.out.println("ON SERVICES DISCOVERED");
 
-            characteristic = gatt.getService(CADENCE_SERVICE_UUID).getCharacteristic(CADENCE_DATA_CHAR_UUID);
+            BluetoothGattCharacteristic characteristic = gatt.getService(CADENCE_SERVICE_UUID).getCharacteristic(CADENCE_DATA_CHAR_UUID);
             gatt.setCharacteristicNotification(characteristic, true);
 
-            descriptor = characteristic.getDescriptor(NTF_DESCRIPTOR_UUID);
+            BleAdapter.this.descriptor = characteristic.getDescriptor(NTF_DESCRIPTOR_UUID);
 
-            enableNotifications();
+            enableNotifications(true);
 
             try {
-                bluetoothLeScanner.stopScan(leScanCallback);
+                BleAdapter.this.bluetoothLeScanner.stopScan(BleAdapter.this.leScanCallback);
             } catch (NullPointerException ignored) {}
         }
 
@@ -200,7 +199,12 @@ public class BleAdapter {
         public void onCharacteristicChanged(BluetoothGatt gatt, @NotNull BluetoothGattCharacteristic characteristic) {
 
             // System.out.println("ON CHARACTERISTIC CHANGED");
-            gattValue = characteristic.getValue();
+
+            if (!BleAdapter.this.gattChanged) {
+
+                BleAdapter.this.gattValue = characteristic.getValue();
+                BleAdapter.this.gattChanged = true;
+            }
         }
     };
 
@@ -218,13 +222,16 @@ public class BleAdapter {
      */
     public Float getNextGattValue() {
 
-        // This shouldn't happen... but sometimes it does for some reason.
-        // Basically, just ignore it if it does happen... because it shouldn't...
-        if (gattValue == null)
-            return null;
 
         // Transform the four bytes that were read by from the GATT cahracteristic into a float
-        return ByteBuffer.wrap(gattValue).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        if (gattChanged && gattValue != null) {
+
+            this.gattChanged = false;
+            return ByteBuffer.wrap(gattValue).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+        }
+
+        // This happens when the GATT hasn't updated in time
+        return null;
     }
 
     /**

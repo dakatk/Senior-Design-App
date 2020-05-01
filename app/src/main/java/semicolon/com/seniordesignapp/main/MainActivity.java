@@ -18,13 +18,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.SeekBar;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
 
-// TODO needs user input section (Fragment possibly?) which will effect the extrema of the SeekBar
-// TODO Change the appearance of the SeekBar
+// TODO needs user input section (Fragment possibly?)
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final static int REQUEST_ENABLE_BT = 1;
@@ -38,8 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BleAdapter bleAdapter;
     private MainTask mainTask;
 
-    private boolean running = false;
-    private boolean paused = false;
+    private boolean paused = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,10 +48,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playbackButton = findViewById(R.id.playback_button);
         playbackButton.setOnClickListener(this);
 
-        TextView cadenceView = findViewById(R.id.show_cadence);
-        SeekBar cadenceDiff = findViewById(R.id.difference_seekbar);
+        TextView cadenceText = findViewById(R.id.show_cadence);
+        ImageView cadenceImage = findViewById(R.id.image_view);
 
-        cadenceReceiver = new CadenceReceiver(cadenceView, cadenceDiff);
+        cadenceReceiver = new CadenceReceiver(cadenceText, cadenceImage);
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(CadenceService.BROADCAST_ID);
@@ -64,7 +62,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         enableBluetoothServices();
 
         bleAdapter = new BleAdapter(this, bluetoothAdapter);
+
+        // Allow reading data from the bluetooth device
+        // bleAdapter.enableNotifications();
+
         mainTask = new MainTask(bleAdapter);
+        mainTask.execute(this);
     }
 
     private void enableBluetoothServices () {
@@ -136,54 +139,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onResume() {
-
-        super.onResume();
-
-        if (!paused)
-            return;
-
-        paused = false;
-
-        enableLocationServices();
-        enableBluetoothServices();
-
-        if (bleAdapter != null)
-            bleAdapter.enableNotifications();
-    }
-
-    @Override
-    public void onPause() {
-
-        super.onPause();
-
-        paused = true;
-
-        playbackButton.setText(R.string.button_run);
-
-        if (bleAdapter != null)
-            bleAdapter.disableNotifications();
-    }
-
-    @Override
-    public void onStop() {
-
-        super.onStop();
-
-        playbackButton.setText(R.string.button_run);
-
-        if (bleAdapter != null)
-            bleAdapter.disableNotifications();
-    }
-
-    @Override
     public void onDestroy() {
 
         System.out.println("Stopping");
 
         super.onDestroy();
 
-        bleAdapter.disableNotifications();
+        bleAdapter.enableNotifications(false);
+        mainTask.stopTask();
 
         unregisterReceiver(cadenceReceiver);
     }
@@ -191,18 +154,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
 
-        running = !running;
+        paused = !paused;
 
-        if (running) {
+        if (paused)
+            playbackButton.setText(R.string.button_run);
 
-            mainTask.execute(this);
-            bleAdapter.enableNotifications();
-        }
-
-        else {
-
-            mainTask.stopTask();
-            bleAdapter.disableNotifications();
-        }
+        else playbackButton.setText(R.string.button_stop);
     }
 }

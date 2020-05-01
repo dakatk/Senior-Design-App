@@ -1,35 +1,29 @@
 package semicolon.com.seniordesignapp.fft.maths;
 
 import android.annotation.SuppressLint;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class Complex implements Comparable<Complex> {
 
-    private double real;
-    private double imag;
+    private float real;
+    private float imag;
 
-    public Complex(double real, double imag) {
+    public Complex(float real, float imag) {
 
         this.real = real;
         this.imag = imag;
     }
 
     @NotNull
-    public static ArrayList<Complex> fromScalars(@NotNull List<Double> scalars) {
+    public static ArrayList<Complex> fromScalars(@NotNull float[] scalars) {
 
         final ArrayList<Complex> complexes = new ArrayList<>();
 
-        scalars.forEach(new Consumer<Double>() {
-            @Override
-            public void accept(Double scalar) {
-                complexes.add(new Complex(scalar, 0.0));
-            }
-        });
+        for (float scalar : scalars) {
+            complexes.add(new Complex(scalar, 0.0f));
+        }
 
         return complexes;
     }
@@ -62,7 +56,7 @@ public class Complex implements Comparable<Complex> {
     @NotNull
     @Override
     public String toString() {
-        return String.format("(%f,%f)", this.real, this.imag);
+        return String.format("(%f, %f)", this.real, this.imag);
     }
 
     @Override

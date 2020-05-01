@@ -4,11 +4,12 @@ import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.SeekBar;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
 
+import semicolon.com.seniordesignapp.R;
 import semicolon.com.seniordesignapp.service.CadenceService;
 
 /**
@@ -17,13 +18,13 @@ import semicolon.com.seniordesignapp.service.CadenceService;
  */
 public class CadenceReceiver extends BroadcastReceiver {
 
-    private TextView view;
-    private SeekBar seekBar;
+    private TextView textView;
+    private ImageView imageView;
 
-    public CadenceReceiver(TextView view, SeekBar seekBar) {
+    public CadenceReceiver(TextView textView, ImageView imageView) {
 
-        this.view = view;
-        this.seekBar = seekBar;
+        this.textView = textView;
+        this.imageView = imageView;
     }
 
     @SuppressLint("DefaultLocale")
@@ -37,11 +38,20 @@ public class CadenceReceiver extends BroadcastReceiver {
 
         if (action.equals(CadenceService.BROADCAST_ID)) {
 
-            double cadenceValue = intent.getDoubleExtra(CadenceService.VALUE_ID, 0.0) * 30.0;
+            float cadenceValue = intent.getFloatExtra(CadenceService.VALUE_ID, 0.0f);
             String cadenceString = String.format("%.2f", cadenceValue);
 
-            view.setText(cadenceString);
-            seekBar.setProgress((int)(cadenceValue + 80.0), true);
+            textView.setText(cadenceString);
+
+            float percentDiff = (cadenceValue - 80.0f) / 80.0f;
+
+            if (percentDiff > 0.05f)
+                imageView.setImageResource(R.drawable.red_down_arrow);
+
+            else if (percentDiff < -0.05f)
+                imageView.setImageResource(R.drawable.red_up_arrow);
+
+            else imageView.setImageResource(R.drawable.green_dash);
         }
     }
 }
