@@ -6,12 +6,14 @@ import android.os.AsyncTask;
 import org.jetbrains.annotations.NotNull;
 
 import semicolon.com.seniordesignapp.bluetooth.BleAdapter;
-import semicolon.com.seniordesignapp.service.CadenceService;
+// import semicolon.com.seniordesignapp.service.CadenceService;
 
 /**
  * Runs and manages the main update loop of the application
  */
 public class MainTask extends AsyncTask<MainActivity, Void, Void> {
+
+    private static final float SECONDS_PER_UNIT = 0.075f;
 
     /**
      * This value should be held 'true' until the background task is stopped.
@@ -39,7 +41,57 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
     @Override
     protected Void doInBackground(@NotNull MainActivity[] mainActivities) {
 
-        Intent cadenceService = new Intent();
+        MainActivity mainActivity = mainActivities[0];
+
+        float cadence = 0.0f;
+
+        int valueIndex = 0;
+        int unitsPerStep = 0;
+
+        int sign = -1;
+
+        while (running) {
+
+            if (mainActivity.isPaused() || !bleAdapter.hasPairedDevice()) {
+                continue;
+            }
+
+            Float nextGattValue = bleAdapter.getNextGattValue();
+
+            if (nextGattValue == null) {
+                continue;
+            }
+
+            unitsPerStep ++;
+
+            if ((nextGattValue < 0.0f && sign == 1) || (nextGattValue >= 0.0f && sign == -1)) {
+
+                valueIndex ++;
+                sign = -sign;
+            }
+
+            if (valueIndex >= 3) {
+
+                valueIndex = 1;
+
+                float newCadence = 60.0f / (unitsPerStep * SECONDS_PER_UNIT);
+
+                if (cadence <= 0.01f) {
+                    cadence = newCadence;
+                }
+
+                else {
+                    cadence = (cadence + newCadence) / 2.0f;
+                }
+
+                Intent sendIntent = new Intent("cadence_send");
+                sendIntent.putExtra("cadence_value", cadence);
+
+                mainActivity.sendBroadcast(sendIntent);
+            }
+        }
+
+        /*Intent cadenceService = new Intent();
         MainActivity mainActivity = mainActivities[0];
 
         cadenceService.setClass(mainActivity, CadenceService.class);
@@ -56,7 +108,12 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
                 continue;
 
             // Record the data that was read from the bluetooth device
-            gattValues[index ++] = bleAdapter.getNextGattValue();
+            Float nextGattValue = bleAdapter.getNextGattValue();
+
+            if (nextGattValue == null)
+                continue;
+
+            gattValues[index ++] = nextGattValue;
 
             if (index >= gattValues.length) {
 
@@ -65,7 +122,7 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
 
                 index = 0;
             }
-        }
+        }*/
         return null;
     }
 

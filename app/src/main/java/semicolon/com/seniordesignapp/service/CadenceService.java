@@ -19,12 +19,7 @@ public class CadenceService extends IntentService {
     public static final String VALUE_ID = "cadence_value";
     public static final String BLE_VALUE_ID = "ble_value";
 
-    public static boolean ready = false;
-
-    /**
-     * The new intent that sends data from this service to the receiver
-     */
-    private final Intent sendIntent = new Intent(BROADCAST_ID);
+    public static boolean ready = true;
 
     /**
      * Creates an IntentService. Invoked by your subclass's constructor.
@@ -48,7 +43,10 @@ public class CadenceService extends IntentService {
             return;
 
         ready = false;
+
+        Intent sendIntent = new Intent(BROADCAST_ID);
         sendIntent.putExtra(VALUE_ID, FFT.centerFrequency(bleValues)  * 30.0f);
+
         ready = true;
 
         sendBroadcast(sendIntent);

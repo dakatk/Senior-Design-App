@@ -23,11 +23,11 @@
         android:id="@+id/image_view"
         android:layout_width="54sp"
         android:layout_height="54sp"
+        android:layout_marginLeft="20dp"
         android:layout_marginBottom="100dp"
-        android:src="@drawable/red_up_arrow"
+        android:src="@drawable/green_dash"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/show_cadence"
-
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView

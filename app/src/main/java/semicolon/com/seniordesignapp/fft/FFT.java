@@ -125,7 +125,7 @@ public class FFT {
             }
         }
 
-        float sampling_freq = 250.0f;
+        float sampling_freq = 13.3333f;
 
         return (sampling_freq * maxIndex) / n;
     }
