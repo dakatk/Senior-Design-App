@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import org.jetbrains.annotations.NotNull;
 
 import semicolon.com.seniordesignapp.bluetooth.BleAdapter;
+import semicolon.com.seniordesignapp.receiver.CadenceReceiver;
 // import semicolon.com.seniordesignapp.service.CadenceService;
 
 /**
@@ -64,7 +65,20 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
 
             unitsPerStep ++;
 
-            if ((nextGattValue < 0.0f && sign == 1) || (nextGattValue >= 0.0f && sign == -1)) {
+            if (unitsPerStep > 250) {
+
+                cadence = 0.0f;
+
+                valueIndex = 1;
+                unitsPerStep = 1;
+
+                Intent sendIntent = new Intent("cadence_send");
+                sendIntent.putExtra("cadence_value", cadence);
+
+                mainActivity.sendBroadcast(sendIntent);
+            }
+
+            else if ((nextGattValue < 0.0f && sign == 1) || (nextGattValue >= 0.0f && sign == -1)) {
 
                 valueIndex ++;
                 sign = -sign;
@@ -85,45 +99,13 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
                     cadence = (cadence + newCadence) / 2.0f;
                 }
 
-                Intent sendIntent = new Intent("cadence_send");
-                sendIntent.putExtra("cadence_value", cadence);
+                Intent sendIntent = new Intent(CadenceReceiver.BROADCAST_ID);
+                sendIntent.putExtra(CadenceReceiver.VALUE_ID, cadence);
 
                 mainActivity.sendBroadcast(sendIntent);
             }
         }
 
-        /*Intent cadenceService = new Intent();
-        MainActivity mainActivity = mainActivities[0];
-
-        cadenceService.setClass(mainActivity, CadenceService.class);
-
-        float[] gattValues = new float[256];
-        int index = 0;
-
-        while (running) {
-
-            if (mainActivity.isPaused() || !bleAdapter.hasPairedDevice())
-                continue;
-
-            if (!CadenceService.ready)
-                continue;
-
-            // Record the data that was read from the bluetooth device
-            Float nextGattValue = bleAdapter.getNextGattValue();
-
-            if (nextGattValue == null)
-                continue;
-
-            gattValues[index ++] = nextGattValue;
-
-            if (index >= gattValues.length) {
-
-                cadenceService.putExtra(CadenceService.BLE_VALUE_ID, gattValues);
-                mainActivity.startService(cadenceService);
-
-                index = 0;
-            }
-        }*/
         return null;
     }
 

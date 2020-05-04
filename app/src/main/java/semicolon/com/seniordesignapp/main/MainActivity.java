@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import semicolon.com.seniordesignapp.R;
 import semicolon.com.seniordesignapp.bluetooth.BleAdapter;
 import semicolon.com.seniordesignapp.receiver.CadenceReceiver;
-import semicolon.com.seniordesignapp.service.CadenceService;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         cadenceReceiver = new CadenceReceiver(cadenceText, cadenceImage);
 
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(CadenceService.BROADCAST_ID);
+        intentFilter.addAction(CadenceReceiver.BROADCAST_ID);
 
         registerReceiver(cadenceReceiver, intentFilter);
 
@@ -62,9 +61,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         enableBluetoothServices();
 
         bleAdapter = new BleAdapter(this, bluetoothAdapter);
-
-        // Allow reading data from the bluetooth device
-        // bleAdapter.enableNotifications();
 
         mainTask = new MainTask(bleAdapter);
         mainTask.execute(this);

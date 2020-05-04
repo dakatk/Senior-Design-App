@@ -10,13 +10,15 @@ import android.widget.TextView;
 import org.jetbrains.annotations.NotNull;
 
 import semicolon.com.seniordesignapp.R;
-import semicolon.com.seniordesignapp.service.CadenceService;
 
 /**
  * After the cadence analysis service has run, this class communicates the
  * values it receives weith the UI thread
  */
 public class CadenceReceiver extends BroadcastReceiver {
+
+    public static final String BROADCAST_ID = "cadence_send";
+    public static final String VALUE_ID = "cadence_value";
 
     private TextView textView;
     private ImageView imageView;
@@ -36,9 +38,9 @@ public class CadenceReceiver extends BroadcastReceiver {
         if (action == null)
             return;
 
-        if (action.equals(CadenceService.BROADCAST_ID)) {
+        if (action.equals(BROADCAST_ID)) {
 
-            float cadenceValue = intent.getFloatExtra(CadenceService.VALUE_ID, 0.0f);
+            float cadenceValue = intent.getFloatExtra(VALUE_ID, 0.0f);
             String cadenceString = String.format("%.2f", cadenceValue);
 
             textView.setText(cadenceString);

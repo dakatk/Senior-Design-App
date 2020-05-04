@@ -4,12 +4,10 @@
     <string name="cadence_units">SPM/F</string>
     <string name="default_cadence_text">0.00</string>
 
+    <string name="cadence_diff_desc">Cadence Diff Icon</string>
+
     <string name="button_run">Run</string>
     <string name="button_stop">Stop</string>
-
-    <string name="unknown_device">Unknown Device</string>
-    <string name="ble_stop_scan">Stop Scanning</string>
-    <string name="ble_start_scan">Scan</string>
 
     <string name="loc_access_alert">This app needs location access</string>
     <string name="loc_access_message">Please grant location access so this app can detect peripherals.</string>

@@ -11,6 +11,7 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.widget.Toast;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -153,9 +154,10 @@ public class BleAdapter {
             String address = device.getAddress();
 
             // Make sure the MAC address is valid and that it matches the address of our bluetooth device
-            if (address != null && address.equals(context.getString(R.string.ble_device_mac_addr))) {
+            if (address != null && address.equals(BleAdapter.this.context.getString(R.string.ble_device_mac_addr))) {
 
                 System.out.println("Device Paired!");
+                Toast.makeText(BleAdapter.this.context, "Device Paired!", Toast.LENGTH_SHORT).show();
 
                 // Begin the process of extracting GATT stuff (services/characteristics/descriptors)
                 BleAdapter.this.gatt = device.connectGatt(context, true, gattCallback);
