@@ -46,7 +46,7 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
         float cadence = 0.0f;
 
         int valueIndex = 0;
-        int unitsPerStep = 0;
+        int unitsPerStep = 1;
 
         int sign = -1;
 
@@ -72,9 +72,10 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
 
             if (valueIndex >= 3) {
 
-                valueIndex = 1;
-
                 float newCadence = 60.0f / (unitsPerStep * SECONDS_PER_UNIT);
+
+                valueIndex = 1;
+                unitsPerStep = 1;
 
                 if (cadence <= 0.01f) {
                     cadence = newCadence;
