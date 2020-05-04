@@ -46,10 +46,8 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
 
         float cadence = 0.0f;
 
-        int valueIndex = 0;
         int unitsPerStep = 1;
-
-        int sign = -1;
+        int sign = 0;
 
         while (running) {
 
@@ -69,26 +67,22 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
 
                 cadence = 0.0f;
 
-                valueIndex = 1;
                 unitsPerStep = 1;
 
-                Intent sendIntent = new Intent("cadence_send");
-                sendIntent.putExtra("cadence_value", cadence);
+                Intent sendIntent = new Intent(CadenceReceiver.BROADCAST_ID);
+                sendIntent.putExtra(CadenceReceiver.VALUE_ID, cadence);
 
                 mainActivity.sendBroadcast(sendIntent);
+
+                continue;
             }
 
-            else if ((nextGattValue < 0.0f && sign == 1) || (nextGattValue >= 0.0f && sign == -1)) {
+            int nextSign = (nextGattValue >= 0.0f ? 1 : -1);
 
-                valueIndex ++;
-                sign = -sign;
-            }
+            if (sign == -1 && nextSign == 1) {
 
-            if (valueIndex >= 3) {
+                float newCadence = 120.0f / (unitsPerStep * SECONDS_PER_UNIT);
 
-                float newCadence = 60.0f / (unitsPerStep * SECONDS_PER_UNIT);
-
-                valueIndex = 1;
                 unitsPerStep = 1;
 
                 if (cadence <= 0.01f) {
@@ -104,6 +98,7 @@ public class MainTask extends AsyncTask<MainActivity, Void, Void> {
 
                 mainActivity.sendBroadcast(sendIntent);
             }
+            sign = nextSign;
         }
 
         return null;
